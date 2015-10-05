@@ -3,7 +3,7 @@ var express = require('../')
   , request = require('supertest')
   , bodyParser = require('body-parser')
 
-describe('req', function(){
+describe.skip('req', function(){
   describe('.param(name, default)', function(){
     it('should use the default value unless defined', function(done){
       var app = express();
