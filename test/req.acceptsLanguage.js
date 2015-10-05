@@ -2,7 +2,7 @@
 var express = require('../')
   , request = require('supertest');
 
-describe('req', function(){
+describe.skip('req', function(){
   describe('.acceptsLanguage', function(){
     it('should be true if language accpeted', function(done){
       var app = express();
