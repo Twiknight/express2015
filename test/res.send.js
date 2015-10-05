@@ -49,7 +49,7 @@ describe('res', function(){
     })
   })
 
-  describe('.send(code, body)', function(){
+  describe.skip('.send(code, body)', function(){
     it('should set .statusCode and body', function(done){
       var app = express();
 
@@ -64,7 +64,7 @@ describe('res', function(){
     })
   })
 
-  describe('.send(body, code)', function(){
+  describe.skip('.send(body, code)', function(){
     it('should be supported for backwards compat', function(done){
       var app = express();
 
@@ -79,7 +79,7 @@ describe('res', function(){
     })
   })
 
-  describe('.send(code, number)', function(){
+  describe.skip('.send(code, number)', function(){
     it('should send number as json', function(done){
       var app = express();
 

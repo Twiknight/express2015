@@ -37,7 +37,7 @@ describe('res', function(){
     })
   })
 
-  describe('.redirect(url, status)', function(){
+  describe.skip('.redirect(url, status)', function(){
     it('should set the response status', function(done){
       var app = express();
 

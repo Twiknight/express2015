@@ -288,7 +288,7 @@ describe('res', function(){
     })
   })
 
-  describe('.sendfile(path, fn)', function(){
+  describe.skip('.sendfile(path, fn)', function(){
     it('should invoke the callback when complete', function(done){
       var app = express();
       var cb = after(2, done);
@@ -456,7 +456,7 @@ describe('res', function(){
     })
   })
 
-  describe('.sendfile(path)', function(){
+  describe.skip('.sendfile(path)', function(){
     it('should not serve dotfiles', function(done){
       var app = express();
 

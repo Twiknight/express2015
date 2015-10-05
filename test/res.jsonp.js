@@ -288,7 +288,7 @@ describe('res', function(){
     })
   })
 
-  describe('.jsonp(status, object)', function(){
+  describe.skip('.jsonp(status, object)', function(){
     it('should respond with json and set the .statusCode', function(done){
       var app = express();
 
@@ -303,7 +303,7 @@ describe('res', function(){
     })
   })
 
-  describe('.jsonp(object, status)', function(){
+  describe.skip('.jsonp(object, status)', function(){
     it('should respond with json and set the .statusCode for backwards compat', function(done){
       var app = express();
 
