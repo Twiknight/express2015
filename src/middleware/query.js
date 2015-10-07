@@ -12,18 +12,8 @@
  * Module dependencies.
  */
 
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-exports['default'] = query;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _parseurl = require('parseurl');
-
-var _parseurl2 = _interopRequireDefault(_parseurl);
-
-var _qs = require('qs');
+import parseUrl from 'parseurl';
+import {parse} from 'qs';
 
 /**
  * @param {Object} options
@@ -31,9 +21,9 @@ var _qs = require('qs');
  * @api public
  */
 
-function query(options) {
-  var opts = Object.create(options || null);
-  var queryparse = _qs.parse;
+export default function query(options) {
+  let opts = Object.create(options || null);
+  let queryparse = parse;
 
   if (typeof options === 'function') {
     queryparse = options;
@@ -50,15 +40,12 @@ function query(options) {
     }
   }
 
-  return function query(req, res, next) {
+  return function query(req, res, next){
     if (!req.query) {
-      var val = (0, _parseurl2['default'])(req).query;
+      var val = parseUrl(req).query;
       req.query = queryparse(val, opts);
     }
 
     next();
   };
-}
-
-;
-module.exports = exports['default'];
+};
