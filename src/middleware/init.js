@@ -11,12 +11,9 @@
  * @api private
  */
 
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-var init = function init(app) {
-  return function expressInit(req, res, next) {
-    new Promise(function (resolve, reject) {
+const init = function(app){
+  return function expressInit(req, res, next){
+    new Promise(function(resolve, reject) {
 
       if (app.enabled('x-powered-by')) {
         res.setHeader('X-Powered-By', 'Express');
@@ -31,10 +28,8 @@ var init = function init(app) {
       res.locals = res.locals || Object.create(null);
 
       resolve();
-    }).then(function () {
-      return next();
-    });
+    }).then(()=>next());
   };
 };
 
-exports.init = init;
+export {init};
