@@ -6,41 +6,15 @@
  * @api private
  */
 
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _contentDisposition = require('content-disposition');
-
-var _contentDisposition2 = _interopRequireDefault(_contentDisposition);
-
-var _contentType = require('content-type');
-
-var _contentType2 = _interopRequireDefault(_contentType);
-
-var _arrayFlatten = require('array-flatten');
-
-var _arrayFlatten2 = _interopRequireDefault(_arrayFlatten);
-
-var _send = require('send');
-
-var _path = require('path');
-
-var _etag2 = require('etag');
-
-var _etag3 = _interopRequireDefault(_etag2);
-
-var _proxyAddr = require('proxy-addr');
-
-var _proxyAddr2 = _interopRequireDefault(_proxyAddr);
-
-var _qs = require('qs');
-
-var _querystring = require('querystring');
-
-var _querystring2 = _interopRequireDefault(_querystring);
+import contentDisposition from 'content-disposition';
+import contentType from 'content-type';
+import flatten from 'array-flatten';
+import {mime} from 'send';
+import {basename} from 'path';
+import _etag from 'etag';
+import proxyaddr from 'proxy-addr';
+import {parse} from 'qs';
+import querystring from 'querystring';
 
 /**
  * Parse accept params `str` returning an
@@ -53,11 +27,11 @@ var _querystring2 = _interopRequireDefault(_querystring);
  */
 
 function acceptParams(str, index) {
-  var parts = str.split(/ *; */);
-  var ret = { value: parts[0], quality: 1, params: {}, originalIndex: index };
+  const parts = str.split(/ *; */);
+  let ret = { value: parts[0], quality: 1, params: {}, originalIndex: index };
 
-  for (var i = 1; i < parts.length; ++i) {
-    var pms = parts[i].split(/ *= */);
+  for (let i = 1; i < parts.length; ++i) {
+    let pms = parts[i].split(/ *= */);
     if ('q' == pms[0]) {
       ret.quality = parseFloat(pms[1]);
     } else {
@@ -77,10 +51,12 @@ function acceptParams(str, index) {
  * @api private
  */
 
-function etag(body, encoding) {
-  var buf = !Buffer.isBuffer(body) ? new Buffer(body, encoding) : body;
+function etag (body, encoding) {
+  let buf = !Buffer.isBuffer(body)
+    ? new Buffer(body, encoding)
+    : body;
 
-  return (0, _etag3['default'])(buf, { weak: false });
+  return _etag(buf, {weak: false});
 };
 
 /**
@@ -92,10 +68,12 @@ function etag(body, encoding) {
  * @api private
  */
 
-function wetag(body, encoding) {
-  var buf = !Buffer.isBuffer(body) ? new Buffer(body, encoding) : body;
+function wetag(body, encoding){
+  let buf = !Buffer.isBuffer(body)
+    ? new Buffer(body, encoding)
+    : body;
 
-  return (0, _etag3['default'])(buf, { weak: true });
+  return _etag(buf, {weak: true});
 };
 
 /**
@@ -106,10 +84,10 @@ function wetag(body, encoding) {
  * @api private
  */
 
-function isAbsolute(path) {
-  if ('/' == path[0]) {
-    return true;
-  }
+function isAbsolute(path){
+  if ('/' == path[0]){
+     return true;
+   }
   if (':' == path[1] && '\\' == path[2]) {
     return true;
   }
@@ -126,8 +104,10 @@ function isAbsolute(path) {
  * @api private
  */
 
-function normalizeType(type) {
-  return type.indexOf('/') > -1 ? acceptParams(type) : { value: _send.mime.lookup(type), params: {} };
+function normalizeType(type){
+  return type.indexOf('/')>-1
+    ? acceptParams(type)
+    : { value: mime.lookup(type), params: {} };
 };
 
 /**
@@ -138,8 +118,8 @@ function normalizeType(type) {
  * @api private
  */
 
-function normalizeTypes(types) {
-  var ret = [];
+function normalizeTypes(types){
+  let ret = [];
 
   for (var i = 0; i < types.length; ++i) {
     ret.push(exports.normalizeType(types[i]));
@@ -147,6 +127,7 @@ function normalizeTypes(types) {
 
   return ret;
 };
+
 
 /**
  * Compile "etag" value to function.
@@ -157,7 +138,7 @@ function normalizeTypes(types) {
  */
 
 function compileETag(val) {
-  var fn = undefined;
+  let fn;
 
   if (typeof val === 'function') {
     return val;
@@ -191,7 +172,7 @@ function compileETag(val) {
  */
 
 function compileQueryParser(val) {
-  var fn = undefined;
+  let fn;
 
   if (typeof val === 'function') {
     return val;
@@ -199,23 +180,19 @@ function compileQueryParser(val) {
 
   switch (val) {
     case true:
-      fn = _querystring2['default'].parse;
+      fn = querystring.parse;
       break;
     case false:
-      fn = function () {
-        return new Object();
-      };
+      fn = ()=>new Object();
       break;
     case 'extended':
-      fn = function (str) {
-        return (0, _qs.parse)(str, {
-          allowDots: false,
-          allowPrototypes: true
-        });
-      };
+      fn = (str)=>parse(str, {
+        allowDots: false,
+        allowPrototypes: true
+      });
       break;
     case 'simple':
-      fn = _querystring2['default'].parse;
+      fn = querystring.parse;
       break;
     default:
       throw new TypeError('unknown value for query parser function: ' + val);
@@ -239,16 +216,12 @@ function compileTrust(val) {
 
   if (val === true) {
     // Support plain true/false
-    return function () {
-      return true;
-    };
+    return ()=>true;
   }
 
   if (typeof val === 'number') {
     // Support trusting hop count
-    return function (a, i) {
-      return i < val;
-    };
+    return (a, i)=>i < val ;
   }
 
   if (typeof val === 'string') {
@@ -256,7 +229,7 @@ function compileTrust(val) {
     val = val.split(/ *, */);
   }
 
-  return _proxyAddr2['default'].compile(val || []);
+  return proxyaddr.compile(val || []);
 }
 
 /**
@@ -274,23 +247,25 @@ function setCharset(type, charset) {
   }
 
   // parse type
-  var parsed = _contentType2['default'].parse(type);
+  var parsed = contentType.parse(type);
 
   // set charset
   parsed.parameters.charset = charset;
 
   // format type
-  return _contentType2['default'].format(parsed);
+  return contentType.format(parsed);
 };
 
-exports.etag = etag;
-exports.wetag = wetag;
-exports.isAbsolute = isAbsolute;
-exports.flatten = _arrayFlatten2['default'];
-exports.normalizeType = normalizeType;
-exports.normalizeTypes = normalizeTypes;
-exports.contentDisposition = _contentDisposition2['default'];
-exports.compileETag = compileETag;
-exports.compileQueryParser = compileQueryParser;
-exports.compileTrust = compileTrust;
-exports.setCharset = setCharset;
+export {
+  etag,
+  wetag,
+  isAbsolute,
+  flatten,
+  normalizeType,
+  normalizeTypes,
+  contentDisposition,
+  compileETag,
+  compileQueryParser,
+  compileTrust,
+  setCharset
+ }
