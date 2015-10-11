@@ -171,6 +171,4 @@ function decode_param(val) {
   }
 }
 
-export default function(path, options, fn){
-  return new Layer(path, options, fn);
-};
+export default Layer;
