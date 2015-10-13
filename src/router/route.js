@@ -18,7 +18,7 @@ import {METHODS} from 'http';
 const debug = _debug('express:router:route');
 const slice = Array.prototype.slice;
 const toString = Object.prototype.toString;
-const verbs_lc = METHODS.map((m)=>m.toLowerCase());
+const methods = METHODS.map((m)=>m.toLowerCase());
 
 
 /**
@@ -37,7 +37,7 @@ class Route {
         // route handlers for various http methods
         this.methods = {};
 
-        verbs_lc.forEach(function(method){
+        methods.forEach(function(method){
           Route.prototype[method] = function(){
             let handles = flatten(slice.call(arguments));
 

@@ -4,22 +4,15 @@
  * Module dependencies.
  * @private
  */
-import * as path from 'path';
-import {statSync as statSync} from 'fs'
-import * as utils from './utils'
+import {dirname, basename, extname, join, resolve} from 'path';
+import {statSync as statSync} from 'fs';
+import _debug from 'debug';
 
 /**
  * Module variables.
  * @private
  */
-
-let debug = require("debug")("express:view")
-let dirname = path.dirname;
-let basename = path.basename;
-let extname = path.extname;
-let join = path.join;
-let  resolve = path.resolve;
-
+const debug = _debug("express:view")
 
 /**
  * Initialize a new `View` with the given `name`.

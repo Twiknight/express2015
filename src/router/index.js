@@ -15,7 +15,7 @@
 
 import Route from './route';
 import Layer from './layer';
-import methods from 'methods';
+import {METHODS} from 'http';
 import mixin from 'utils-merge';
 import _debug from 'debug';
 import flatten from 'array-flatten';
@@ -29,6 +29,7 @@ const debug = _debug('express:router');
 const objectRegExp = /^\[object (\S+)\]$/;
 const slice = Array.prototype.slice;
 const toString = Object.prototype.toString;
+const methods = ["all"].concat(METHODS.map((m)=>m.toLowerCase()));
 
 /**
  * Initialize a new `Router` with the given `options`.
@@ -500,7 +501,7 @@ proto.route = function route(path) {
 };
 
 // create Router#VERB functions
-methods.concat('all').forEach(function(method){
+methods.forEach(function(method){
   proto[method] = function(path){
     let route = this.route(path)
     route[method].apply(route, slice.call(arguments, 1));

@@ -11,11 +11,11 @@ import finalhandler from 'finalhandler';
 import flatten from 'array-flatten';
 import merge from 'utils-merge';
 import {resolve} from 'path';
+import {METHODS} from 'http';
+import _debug from 'debug';
 import Router from './router';
-import methods from 'methods';
 import middleware from './middleware/init';
 import query from './middleware/query';
-import _debug from 'debug';
 import View from './view';
 import {compileETag} from './utils';
 import {compileQueryParser} from './utils';
@@ -23,7 +23,7 @@ import {compileTrust} from './utils';
 
 const slice = Array.prototype.slice;
 const debug = _debug('express:application');
-const deprecate = require('depd')('express');
+const methods = METHODS.map(m=>m.toLowerCase());
 /**
  * Application prototype.
  */
@@ -500,8 +500,8 @@ app.all = function all(path) {
 };
 
 // del -> delete alias
-
-app.del = deprecate.function(app.delete, 'app.del: Use app.delete instead');
+// deprecated
+app.del = app.delete;
 
 /**
  * Render the given view `name` name with `options`

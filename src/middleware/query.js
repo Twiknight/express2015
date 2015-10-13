@@ -41,11 +41,16 @@ export default function query(options) {
   }
 
   return function query(req, res, next){
-    if (!req.query) {
-      var val = parseUrl(req).query;
-      req.query = queryparse(val, opts);
-    }
-
-    next();
+     new Promise(function(resolve, reject) {
+        if (!req.query) {
+            resolve();
+        }else {
+            reject();
+        }
+    }).then(function () {
+          let val = parseUrl(req).query;
+          req.query = queryparse(val, opts);
+          next();
+    },next);
   };
 };
