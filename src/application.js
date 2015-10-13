@@ -13,70 +13,35 @@
  * @private
  */
 
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
+import http from 'http';
+import finalhandler from 'finalhandler';
+import flatten from 'array-flatten';
+import merge from 'utils-merge';
+import {resolve} from 'path';
+import Router from './router';
+import methods from 'methods';
+import middleware from './middleware/init';
+import query from './middleware/query';
+import _debug from 'debug';
+import View from './view';
+import {compileETag} from './utils';
+import {compileQueryParser} from './utils';
+import {compileTrust} from './utils';
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _http = require('http');
-
-var _http2 = _interopRequireDefault(_http);
-
-var _finalhandler = require('finalhandler');
-
-var _finalhandler2 = _interopRequireDefault(_finalhandler);
-
-var _arrayFlatten = require('array-flatten');
-
-var _arrayFlatten2 = _interopRequireDefault(_arrayFlatten);
-
-var _utilsMerge = require('utils-merge');
-
-var _utilsMerge2 = _interopRequireDefault(_utilsMerge);
-
-var _path = require('path');
-
-var _router = require('./router');
-
-var _router2 = _interopRequireDefault(_router);
-
-var _methods = require('methods');
-
-var _methods2 = _interopRequireDefault(_methods);
-
-var _middlewareInit = require('./middleware/init');
-
-var _middlewareInit2 = _interopRequireDefault(_middlewareInit);
-
-var _middlewareQuery = require('./middleware/query');
-
-var _middlewareQuery2 = _interopRequireDefault(_middlewareQuery);
-
-var _debug2 = require('debug');
-
-var _debug3 = _interopRequireDefault(_debug2);
-
-var _view = require('./view');
-
-var _view2 = _interopRequireDefault(_view);
-
-var _utils = require('./utils');
-
-var slice = Array.prototype.slice;
-var debug = (0, _debug3['default'])('express:application');
-var deprecate = require('depd')('express');
+const slice = Array.prototype.slice;
+const debug = _debug('express:application');
+const deprecate = require('depd')('express');
 /**
  * Application prototype.
  */
 
-var app = {};
+let app = {};
 
 /**
  * Variable for trust proxy inheritance back-compat
  * @private
  */
-var trustProxyDefaultSymbol = '@@symbol:trust_proxy_default';
+const trustProxyDefaultSymbol = '@@symbol:trust_proxy_default';
 
 /**
  * Initialize the server.
@@ -102,7 +67,7 @@ app.init = function init() {
  */
 
 app.defaultConfiguration = function defaultConfiguration() {
-  var env = process.env.NODE_ENV || 'development';
+  let env = process.env.NODE_ENV || 'development';
 
   // default settings
   this.enable('x-powered-by');
@@ -122,7 +87,8 @@ app.defaultConfiguration = function defaultConfiguration() {
 
   this.on('mount', function onmount(parent) {
     // inherit trust proxy
-    if (this.settings[trustProxyDefaultSymbol] === true && typeof parent.settings['trust proxy fn'] === 'function') {
+    if (this.settings[trustProxyDefaultSymbol] === true
+      && typeof parent.settings['trust proxy fn'] === 'function') {
       delete this.settings['trust proxy'];
       delete this.settings['trust proxy fn'];
     }
@@ -144,8 +110,8 @@ app.defaultConfiguration = function defaultConfiguration() {
   this.locals.settings = this.settings;
 
   // default configuration
-  this.set('view', _view2['default']);
-  this.set('views', (0, _path.resolve)('views'));
+  this.set('view', View);
+  this.set('views', resolve('views'));
   this.set('jsonp callback name', 'callback');
 
   if (env === 'production') {
@@ -153,7 +119,7 @@ app.defaultConfiguration = function defaultConfiguration() {
   }
 
   Object.defineProperty(this, 'router', {
-    get: function get() {
+    get: function() {
       throw new Error('\'app.router\' is deprecated!\nPlease see the 3.x to 4.x migration guide for details on how to update your app.');
     }
   });
@@ -169,13 +135,13 @@ app.defaultConfiguration = function defaultConfiguration() {
  */
 app.lazyrouter = function lazyrouter() {
   if (!this._router) {
-    this._router = new _router2['default']({
+    this._router = new Router({
       caseSensitive: this.enabled('case sensitive routing'),
       strict: this.enabled('strict routing')
     });
 
-    this._router.use((0, _middlewareQuery2['default'])(this.get('query parser fn')));
-    this._router.use(_middlewareInit2['default'].init(this));
+    this._router.use(query(this.get('query parser fn')));
+    this._router.use(middleware.init(this));
   }
 };
 
@@ -189,10 +155,10 @@ app.lazyrouter = function lazyrouter() {
  */
 
 app.handle = function handle(req, res, callback) {
-  var router = this._router;
+  let router = this._router;
 
   // final handler
-  var done = callback || (0, _finalhandler2['default'])(req, res, {
+  let done = callback || finalhandler(req, res, {
     env: this.get('env'),
     onerror: logerror.bind(this)
   });
@@ -218,13 +184,13 @@ app.handle = function handle(req, res, callback) {
  */
 
 app.use = function use(fn) {
-  var offset = 0;
-  var path = '/';
+  let offset = 0;
+  let path = '/';
 
   // default path to '/'
   // disambiguate app.use([fn])
   if (typeof fn !== 'function') {
-    var arg = fn;
+    let arg = fn;
 
     while (Array.isArray(arg) && arg.length !== 0) {
       arg = arg[0];
@@ -237,7 +203,7 @@ app.use = function use(fn) {
     }
   }
 
-  var fns = (0, _arrayFlatten2['default'])(slice.call(arguments, offset));
+  let fns = flatten(slice.call(arguments, offset));
 
   if (fns.length === 0) {
     throw new TypeError('app.use() requires middleware functions');
@@ -245,7 +211,7 @@ app.use = function use(fn) {
 
   // setup router
   this.lazyrouter();
-  var router = this._router;
+  let router = this._router;
 
   fns.forEach(function (fn) {
     // non-express app
@@ -259,7 +225,7 @@ app.use = function use(fn) {
 
     // restore .app property on req and res
     router.use(path, function mounted_app(req, res, next) {
-      var orig = req.app;
+      let orig = req.app;
       fn.handle(req, res, function (err) {
         req.__proto__ = orig.request;
         res.__proto__ = orig.response;
@@ -329,7 +295,9 @@ app.engine = function engine(ext, fn) {
   }
 
   // get file extension
-  var extension = ext[0] !== '.' ? '.' + ext : ext;
+  let extension = ext[0] !== '.'
+    ? '.' + ext
+    : ext;
 
   // store engine
   this.engines[extension] = fn;
@@ -353,7 +321,7 @@ app.param = function param(name, fn) {
   this.lazyrouter();
 
   if (Array.isArray(name)) {
-    for (var i = 0; i < name.length; i++) {
+    for (let i = 0; i < name.length; i++) {
       this.param(name[i], fn);
     }
 
@@ -394,13 +362,13 @@ app.set = function set(setting, val) {
   // trigger matched settings
   switch (setting) {
     case 'etag':
-      this.set('etag fn', (0, _utils.compileETag)(val));
+      this.set('etag fn', compileETag(val));
       break;
     case 'query parser':
-      this.set('query parser fn', (0, _utils.compileQueryParser)(val));
+      this.set('query parser fn', compileQueryParser(val));
       break;
     case 'trust proxy':
-      this.set('trust proxy fn', (0, _utils.compileTrust)(val));
+      this.set('trust proxy fn', compileTrust(val));
 
       // trust proxy inherit back-compat
       Object.defineProperty(this.settings, trustProxyDefaultSymbol, {
@@ -429,7 +397,9 @@ app.set = function set(setting, val) {
  */
 
 app.path = function path() {
-  return this.parent ? this.parent.path() + this.mountpath : '';
+  return this.parent
+    ? this.parent.path() + this.mountpath
+    : '';
 };
 
 /**
@@ -498,8 +468,8 @@ app.disable = function disable(setting) {
  * Delegate `.VERB(...)` calls to `router.VERB(...)`.
  */
 
-_methods2['default'].forEach(function (method) {
-  app[method] = function (path) {
+methods.forEach(function(method){
+  app[method] = function(path){
     if (method === 'get' && arguments.length === 1) {
       // app.get(setting)
       return this.set(path);
@@ -507,7 +477,7 @@ _methods2['default'].forEach(function (method) {
 
     this.lazyrouter();
 
-    var route = this._router.route(path);
+    let route = this._router.route(path);
     route[method].apply(route, slice.call(arguments, 1));
     return this;
   };
@@ -526,11 +496,11 @@ _methods2['default'].forEach(function (method) {
 app.all = function all(path) {
   this.lazyrouter();
 
-  var route = this._router.route(path);
-  var args = slice.call(arguments, 1);
+  let route = this._router.route(path);
+  let args = slice.call(arguments, 1);
 
-  for (var i = 0; i < _methods2['default'].length; i++) {
-    route[_methods2['default'][i]].apply(route, args);
+  for (let i = 0; i < methods.length; i++) {
+    route[methods[i]].apply(route, args);
   }
 
   return this;
@@ -538,7 +508,7 @@ app.all = function all(path) {
 
 // del -> delete alias
 
-app.del = deprecate['function'](app['delete'], 'app.del: Use app.delete instead');
+app.del = deprecate.function(app.delete, 'app.del: Use app.delete instead');
 
 /**
  * Render the given view `name` name with `options`
@@ -558,12 +528,12 @@ app.del = deprecate['function'](app['delete'], 'app.del: Use app.delete instead'
  */
 
 app.render = function render(name, options, callback) {
-  var cache = this.cache;
-  var done = callback;
-  var engines = this.engines;
-  var opts = options;
-  var renderOptions = {};
-  var view = undefined;
+  let cache = this.cache;
+  let done = callback;
+  let engines = this.engines;
+  let opts = options;
+  let renderOptions = {};
+  let view;
 
   // support callback function as second arg
   if (typeof options === 'function') {
@@ -572,15 +542,15 @@ app.render = function render(name, options, callback) {
   }
 
   // merge app.locals
-  (0, _utilsMerge2['default'])(renderOptions, this.locals);
+  merge(renderOptions, this.locals);
 
   // merge options._locals
   if (opts._locals) {
-    (0, _utilsMerge2['default'])(renderOptions, opts._locals);
+    merge(renderOptions, opts._locals);
   }
 
   // merge options
-  (0, _utilsMerge2['default'])(renderOptions, opts);
+  merge(renderOptions, opts);
 
   // set .cache unless explicitly provided
   if (renderOptions.cache == null) {
@@ -594,17 +564,19 @@ app.render = function render(name, options, callback) {
 
   // view
   if (!view) {
-    var _View = this.get('view');
+    let View = this.get('view');
 
-    view = new _View(name, {
+    view = new View(name, {
       defaultEngine: this.get('view engine'),
       root: this.get('views'),
       engines: engines
     });
 
     if (!view.path) {
-      var dirs = Array.isArray(view.root) && view.root.length > 1 ? 'directories "' + view.root.slice(0, -1).join('", "') + '" or "' + view.root[view.root.length - 1] + '"' : 'directory "' + view.root + '"';
-      var err = new Error('Failed to lookup view "' + name + '" in views ' + dirs);
+      let dirs = Array.isArray(view.root) && view.root.length > 1
+        ? 'directories "' + view.root.slice(0, -1).join('", "') + '" or "' + view.root[view.root.length - 1] + '"'
+        : 'directory "' + view.root + '"'
+      let err = new Error('Failed to lookup view "' + name + '" in views ' + dirs);
       err.view = view;
       return done(err);
     }
@@ -641,7 +613,7 @@ app.render = function render(name, options, callback) {
  */
 
 app.listen = function listen() {
-  var server = _http2['default'].createServer(this);
+  let server = http.createServer(this);
   return server.listen.apply(server, arguments);
 };
 
@@ -670,5 +642,5 @@ function tryRender(view, options, callback) {
   }
 }
 
-exports['default'] = app;
-module.exports = exports['default'];
+
+export default app;

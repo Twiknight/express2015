@@ -3,7 +3,7 @@ var express = require('../')
   , request = require('supertest');
 
 describe('app', function(){
-  describe('.param(fn)', function(){
+  describe.skip('.param(fn)', function(){
     it('should map app.param(name, ...) logic', function(done){
       var app = express();
 

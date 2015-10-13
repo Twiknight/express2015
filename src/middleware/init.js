@@ -32,4 +32,4 @@ const init = function(app){
   };
 };
 
-export {init};
+export default {init};

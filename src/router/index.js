@@ -30,7 +30,6 @@ const objectRegExp = /^\[object (\S+)\]$/;
 const slice = Array.prototype.slice;
 const toString = Object.prototype.toString;
 
-const deprecate = require('depd')('express');
 /**
  * Initialize a new `Router` with the given `options`.
  *
@@ -39,7 +38,7 @@ const deprecate = require('depd')('express');
  * @public
  */
 
-let proto = module.exports = function(options) {
+let proto = function(options) {
   let opts = options || {};
 
   function router(req, res, next) {
@@ -94,36 +93,31 @@ let proto = module.exports = function(options) {
  */
 
 proto.param = function param(name, fn) {
-  // param logic
-  if (typeof name === 'function') {
-    deprecate('router.param(fn): Refactor to use path params');
-    this._params.push(name);
-    return;
-  }
 
   // apply param functions
   let params = this._params;
   let len = params.length;
   let ret;
-
-  if (name[0] === ':') {
-    deprecate('router.param(' + JSON.stringify(name) + ', fn): Use router.param(' + JSON.stringify(name.substr(1)) + ', fn) instead');
-    name = name.substr(1);
-  }
+  let _fn = fn
 
   for (let i = 0; i < len; ++i) {
-    if (ret = params[i](name, fn)) {
-      fn = ret;
+    ret = params[i](name, _fn);
+    if (ret) {
+      _fn = ret;
     }
   }
 
   // ensure we end up with a
   // middleware function
-  if ('function' != typeof fn) {
-    throw new Error('invalid param() call for ' + name + ', got ' + fn);
+  if ('function' !== typeof _fn) {
+    throw new Error('invalid param() call for ' + name + ', got ' + _fn);
   }
 
-  (this.params[name] = this.params[name] || []).push(fn);
+  if(this.params[name]){
+    this.params[name].push(_fn);
+  }else{
+    this.params[name] = [_fn];
+  }
   return this;
 };
 
@@ -492,12 +486,12 @@ proto.use = function use(fn) {
 
 proto.route = function route(path) {
   let _route = new Route(path);
-
-  let layer = new Layer(path, {
-    sensitive: this.caseSensitive,
-    strict: this.strict,
-    end: true
-}, _route.dispatch.bind(_route));
+  let opts = {
+      sensitive: this.caseSensitive,
+      strict: this.strict,
+      end: true
+    }
+  let layer = new Layer(path, opts, _route.dispatch.bind(_route));
 
   layer.route = _route;
 
@@ -622,3 +616,4 @@ function sendOptionsResponse(res, options, next) {
     next(err);
   }
 }
+export default proto;
