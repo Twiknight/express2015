@@ -28,7 +28,7 @@ const init = function(app){
       res.locals = res.locals || Object.create(null);
 
       resolve();
-    }).then(()=>next());
+    }).then(next);
   };
 };
 
