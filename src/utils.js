@@ -30,9 +30,9 @@ function acceptParams(str, index) {
   const parts = str.split(/ *; */);
   let ret = { value: parts[0], quality: 1, params: {}, originalIndex: index };
 
-  for (let i = 1; i < parts.length; ++i) {
+  for (let i = 1; i < parts.length; i++) {
     let pms = parts[i].split(/ *= */);
-    if ('q' == pms[0]) {
+    if ('q' === pms[0]) {
       ret.quality = parseFloat(pms[1]);
     } else {
       ret.params[pms[0]] = pms[1];
@@ -121,8 +121,8 @@ function normalizeType(type){
 function normalizeTypes(types){
   let ret = [];
 
-  for (var i = 0; i < types.length; ++i) {
-    ret.push(exports.normalizeType(types[i]));
+  for (let i = 0; i < types.length; i++) {
+    ret.push(normalizeType(types[i]));
   }
 
   return ret;
@@ -247,7 +247,7 @@ function setCharset(type, charset) {
   }
 
   // parse type
-  var parsed = contentType.parse(type);
+  let parsed = contentType.parse(type);
 
   // set charset
   parsed.parameters.charset = charset;
